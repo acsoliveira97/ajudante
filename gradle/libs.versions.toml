@@ -1,0 +1,6 @@
+[versions]
+telegrambots = "9.3.0"
+
+[libraries]
+telegrambots-longpolling = { module = "org.telegram:telegrambots-springboot-longpolling-starter", version.ref = "telegrambots" }
+telegrambots-client = { module = "org.telegram:telegrambots-client", version.ref = "telegrambots" }

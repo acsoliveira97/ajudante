@@ -1,3 +1,17 @@
 spring:
-  application:
-    name: ajudante
+  docker:
+    compose:
+      enabled: true
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ajudante
+    username: ajudante
+    password: ajudante
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+telegram:
+  bot:
+    username: ${TELEGRAM_BOT_USERNAME}
+    token: ${TELEGRAM_BOT_TOKEN}

@@ -12,7 +12,6 @@ class UiBuilder {
 
     // MVP hardcoded data (later comes from DB)
     private val teamMembers = listOf("Ana", "Catarina", "Joana", "Rita")
-    private val housesList = (1..20).map { it.toString() }
 
     fun mainMenu(chatId: Long): SendMessage {
         val msg = SendMessage(chatId.toString(), "Olá! 👋 O que queres fazer?")
@@ -62,38 +61,80 @@ class UiBuilder {
             .replyMarkup(teamPickerMarkup(session))
             .build()
 
-    fun housesPickerMarkup(session: BotSession): InlineKeyboardMarkup {
-        val rows = housesList.map { house ->
-            val selected = if (session.houses.contains(house)) "✅ " else ""
-            InlineKeyboardRow(btn(selected + house, "HOUSE_$house"))
-        }.toMutableList()
+    /**
+     * Houses selection UI (filtered results).
+     * This assumes WizardService filters houses in-memory and passes the current "result list" here.
+     */
+    fun housesFilteredSend(
+        chatId: Long,
+        session: BotSession,
+        selected: List<HouseOption>,
+        results: List<HouseOption>
+    ): SendMessage {
+        val msg = SendMessage(
+            chatId.toString(),
+            "🏠 Casas selecionadas: ${session.selectedHouseIds.size}\n" +
+                    "Escreve para filtrar (ex: 'Art', 'Almada')."
+        )
+        msg.replyMarkup = housesFilteredMarkup( selected, results)
+        return msg
+    }
 
-        rows.add(InlineKeyboardRow(btn("Confirmar casas", "HOUSE_CONFIRM")))
+    fun housesFilteredEdit(
+        chatId: Long,
+        messageId: Int,
+        session: BotSession,
+        selected: List<HouseOption>,
+        results: List<HouseOption>
+    ): EditMessageText =
+        EditMessageText.builder()
+            .chatId(chatId.toString())
+            .messageId(messageId)
+            .text(
+                "🏠 Casas selecionadas: ${session.selectedHouseIds.size}\n" +
+                        "Escreve para filtrar (ex: 'Art', 'Almada')."
+            )
+            .replyMarkup(housesFilteredMarkup(selected, results))
+            .build()
+
+    private fun housesFilteredMarkup(
+        selected: List<HouseOption>,
+        results: List<HouseOption>
+    ): InlineKeyboardMarkup {
+
+        val rows = mutableListOf<InlineKeyboardRow>()
+
+        // --- Secção: Selecionadas (sempre visíveis)
+        if (selected.isNotEmpty()) {
+            rows += InlineKeyboardRow(btn("✅ Selecionadas", "IGNORE")) // “header” (não faz nada)
+            selected.forEach { h ->
+                rows += InlineKeyboardRow(btn("✅ ${h.shortName}", "HOUSE_${h.id}")) // toggle para remover
+            }
+        }
+
+        // --- Secção: Resultados do filtro
+        rows += InlineKeyboardRow(btn("🔎 Resultados", "IGNORE"))
+        results.forEach { h ->
+            rows += InlineKeyboardRow(btn(h.shortName, "HOUSE_${h.id}")) // toggle para adicionar
+        }
+
+        rows += InlineKeyboardRow(btn("✅ Confirmar casas", "HOUSE_CONFIRM"))
 
         return InlineKeyboardMarkup.builder().keyboard(rows).build()
     }
 
-    fun housesPickerSend(chatId: Long, session: BotSession): SendMessage {
-        val msg = SendMessage(chatId.toString(), "🏠 Escolhe as casas:")
-        msg.replyMarkup = housesPickerMarkup(session)
-        return msg
-    }
-
-    fun housesPickerEdit(chatId: Long, messageId: Int, session: BotSession): EditMessageText =
-        EditMessageText.builder()
-            .chatId(chatId.toString())
-            .messageId(messageId)
-            .text("🏠 Escolhe as casas:")
-            .replyMarkup(housesPickerMarkup(session))
-            .build()
-
     fun finalConfirmation(chatId: Long, session: BotSession): SendMessage {
+        val houseNames = session.allHouses
+            .filter { session.selectedHouseIds.contains(it.id) }
+            .sortedBy { it.shortName.lowercase() }
+            .joinToString(", ") { it.shortName }
+
         val summary = """
-            📝 Confirmar registo:
-            
-            📅 Dia: ${session.day}
-            👥 Equipa: ${session.team.joinToString()}
-            🏠 Casas: ${session.houses.joinToString()}
+        📝 Confirmar registo:
+        
+        📅 Dia: ${session.day}
+        👥 Equipa: ${session.team.joinToString()}
+        🏠 Casas: $houseNames
         """.trimIndent()
 
         val keyboard = listOf(
@@ -109,5 +150,8 @@ class UiBuilder {
     }
 
     private fun btn(text: String, data: String): InlineKeyboardButton =
-        InlineKeyboardButton.builder().text(text).callbackData(data).build()
+        InlineKeyboardButton.builder()
+            .text(text)
+            .callbackData(data)
+            .build()
 }

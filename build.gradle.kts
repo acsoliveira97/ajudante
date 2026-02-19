@@ -22,36 +22,34 @@ repositories {
 }
 
 dependencies {
-	// --- App ---
+	// --- implementation ---
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
-	implementation("org.webjars:bootstrap:5.3.3")
-	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
-	testImplementation("org.instancio:instancio-junit:3.4.0")
-
 	implementation("org.springframework.boot:spring-boot-starter-flyway")
 	implementation("org.flywaydb:flyway-database-postgresql")
-
-	runtimeOnly("org.postgresql:postgresql")
-
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+	implementation(libs.bootstrap)
+	implementation(libs.springdoc.openapi.webmvc)
 
-	// Local dev convenience
+	// --- runtimeOnly ---
+	runtimeOnly("org.postgresql:postgresql")
+
+	// --- developmentOnly ---
 	developmentOnly("org.springframework.boot:spring-boot-docker-compose")
 
-	// --- Tests ---
+	// --- testImplementation ---
+	testImplementation(platform(libs.testcontainers.bom))
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.boot:spring-boot-testcontainers")
-
-	// Testcontainers (BOM manages versions)
-	testImplementation(platform("org.testcontainers:testcontainers-bom:1.20.4"))
-	testImplementation("org.testcontainers:junit-jupiter")
-	testImplementation("org.testcontainers:postgresql")
-
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+	testImplementation(libs.instancio.junit)
+	testImplementation(libs.testcontainers.junit)
+	testImplementation(libs.testcontainers.postgresql)
+
+	// --- testRuntimeOnly ---
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

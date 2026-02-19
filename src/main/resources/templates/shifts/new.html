@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Ajudante — Novo Turno</title>
+
+    <!-- Bootstrap CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+
+<body class="bg-light">
+<div class="container py-4" style="max-width: 1000px;">
+
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h1 class="h3 mb-0">➕ Novo registo</h1>
+        <span class="text-muted small">Ajudante</span>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <!-- Alerts -->
+            <div id="alertSuccess" class="alert alert-success d-none">
+                ✅ Registo criado com sucesso!
+            </div>
+            <div id="alertError" class="alert alert-danger d-none"></div>
+
+            <!-- Date -->
+            <div class="mb-3">
+                <label class="form-label">Dia</label>
+                <input id="shiftDate" type="date" class="form-control"/>
+            </div>
+
+            <!-- Employees -->
+            <div class="mb-4">
+                <label class="form-label">Equipa</label>
+                <div id="employeesBox" class="d-flex flex-wrap gap-2"></div>
+                <div class="form-text">Escolhe 1+ pessoas.</div>
+            </div>
+
+            <!-- Houses 2-column -->
+            <div class="mb-2">
+                <label class="form-label">Casas</label>
+            </div>
+
+            <div class="row g-3 mb-3">
+
+                <!-- LEFT: Available houses -->
+                <div class="col-12 col-lg-7">
+                    <div class="border rounded bg-white p-3 h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="fw-semibold">Disponíveis</div>
+                            <div class="text-muted small" id="availableCount">0</div>
+                        </div>
+
+                        <input id="houseSearch"
+                               type="text"
+                               class="form-control mb-3"
+                               placeholder="Pesquisar (ex: AD11, Almada, Pinheiro)…"/>
+
+                        <div class="border rounded p-2" style="max-height: 380px; overflow:auto;">
+                            <div id="availableHousesBox" class="d-grid gap-1"></div>
+                        </div>
+
+                        <div class="form-text mt-2">
+                            Dica: escreve para filtrar. As casas selecionadas mantêm-se selecionadas.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT: Selected houses -->
+                <div class="col-12 col-lg-5">
+                    <div class="border rounded bg-white p-3 h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="fw-semibold">
+                                Selecionadas (<span id="selectedCount">0</span>)
+                            </div>
+                            <button id="btnClearHouses" type="button" class="btn btn-sm btn-outline-secondary">
+                                Limpar
+                            </button>
+                        </div>
+
+                        <div class="border rounded p-2" style="max-height: 430px; overflow:auto;">
+                            <div id="selectedHousesBox" class="d-grid gap-2"></div>
+                        </div>
+
+                        <div class="text-muted small mt-2" id="selectedHint">
+                            (a lista fica aqui fixa)
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Submit -->
+            <div class="d-flex gap-2">
+                <button id="btnSubmit" class="btn btn-primary">Guardar</button>
+                <button id="btnReset" class="btn btn-outline-secondary">Limpar tudo</button>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const BASE = "/cinzaerosa"; // if you use context-path
+    const API = BASE + "";
+
+    let employees = [];
+    let houses = [];
+
+    const selectedEmployeeIds = new Set();
+    const selectedHouseIds = new Set();
+
+    const elEmployeesBox = document.getElementById("employeesBox");
+
+    const elHouseSearch = document.getElementById("houseSearch");
+    const elShiftDate = document.getElementById("shiftDate");
+
+    const elAvailableHousesBox = document.getElementById("availableHousesBox");
+    const elSelectedHousesBox = document.getElementById("selectedHousesBox");
+
+    const elSelectedCount = document.getElementById("selectedCount");
+    const elAvailableCount = document.getElementById("availableCount");
+
+    const elAlertSuccess = document.getElementById("alertSuccess");
+    const elAlertError = document.getElementById("alertError");
+
+    function showError(msg) {
+        elAlertError.textContent = msg;
+        elAlertError.classList.remove("d-none");
+        elAlertSuccess.classList.add("d-none");
+    }
+
+    function showSuccess(msg) {
+        elAlertSuccess.textContent = msg;
+        elAlertSuccess.classList.remove("d-none");
+        elAlertError.classList.add("d-none");
+    }
+
+    function clearAlerts() {
+        elAlertSuccess.classList.add("d-none");
+        elAlertError.classList.add("d-none");
+    }
+
+    function renderEmployees() {
+        elEmployeesBox.innerHTML = "";
+        employees.forEach(e => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "btn btn-sm " + (selectedEmployeeIds.has(e.id) ? "btn-success" : "btn-outline-success");
+            btn.textContent = e.name;
+            btn.onclick = () => {
+                if (selectedEmployeeIds.has(e.id)) selectedEmployeeIds.delete(e.id);
+                else selectedEmployeeIds.add(e.id);
+                renderEmployees();
+            };
+            elEmployeesBox.appendChild(btn);
+        });
+    }
+
+    function houseMatches(h, q) {
+        if (!q) return true;
+        const qq = q.toLowerCase();
+        return (h.shortName && h.shortName.toLowerCase().includes(qq)) ||
+            (h.name && h.name.toLowerCase().includes(qq)) ||
+            (h.clientName && h.clientName.toLowerCase().includes(qq));
+    }
+
+    function sortHousesForUI(list) {
+        return list.slice().sort((a, b) => (a.shortName ?? "").localeCompare(b.shortName ?? "", "pt", {sensitivity: "base"}));
+    }
+
+    function renderHouses() {
+        const q = elHouseSearch.value.trim();
+
+        // selected (always shown on the right)
+        const selected = sortHousesForUI(houses.filter(h => selectedHouseIds.has(h.id)));
+
+        // available = not selected + matches filter (left)
+        const available = sortHousesForUI(
+            houses
+                .filter(h => !selectedHouseIds.has(h.id))
+                .filter(h => houseMatches(h, q))
+        );
+
+        elSelectedCount.textContent = String(selected.length);
+        elAvailableCount.textContent = `${available.length} disponíveis`;
+
+        // RIGHT: Selected list
+        elSelectedHousesBox.innerHTML = "";
+        if (selected.length === 0) {
+            const empty = document.createElement("div");
+            empty.className = "text-muted small p-2";
+            empty.textContent = "Ainda não selecionaste casas.";
+            elSelectedHousesBox.appendChild(empty);
+        } else {
+            selected.forEach(h => {
+                const row = document.createElement("div");
+                row.className = "d-flex justify-content-between align-items-center border rounded p-2";
+
+                const left = document.createElement("div");
+                left.className = "me-2";
+                left.innerHTML = `
+          <div class="fw-semibold">${escapeHtml(h.shortName ?? "")}</div>
+          ${h.name ? `<div class="text-muted small">${escapeHtml(h.name)}</div>` : ""}
+        `;
+
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "btn btn-sm btn-outline-danger";
+                btn.textContent = "Remover";
+                btn.onclick = () => {
+                    selectedHouseIds.delete(h.id);
+                    renderHouses();
+                };
+
+                row.appendChild(left);
+                row.appendChild(btn);
+                elSelectedHousesBox.appendChild(row);
+            });
+        }
+
+        // LEFT: Available list
+        elAvailableHousesBox.innerHTML = "";
+
+        // safety limit to keep UI fast
+        const availableToShow = available.slice(0, 120);
+
+        if (availableToShow.length === 0) {
+            const empty = document.createElement("div");
+            empty.className = "text-muted small p-2";
+            empty.textContent = "Sem resultados para esta pesquisa.";
+            elAvailableHousesBox.appendChild(empty);
+            return;
+        }
+
+        availableToShow.forEach(h => {
+            const row = document.createElement("label");
+            row.className = "d-flex align-items-center gap-2 p-2 border rounded";
+
+            const cb = document.createElement("input");
+            cb.type = "checkbox";
+            cb.className = "form-check-input";
+            cb.checked = false;
+            cb.onchange = () => {
+                if (cb.checked) {
+                    selectedHouseIds.add(h.id);
+                    renderHouses();
+                }
+            };
+
+            const text = document.createElement("div");
+            text.className = "flex-grow-1";
+            text.innerHTML = `<div class="fw-semibold">${escapeHtml(h.shortName ?? "")}</div>`;
+
+            row.appendChild(cb);
+            row.appendChild(text);
+
+            elAvailableHousesBox.appendChild(row);
+        });
+    }
+
+    function escapeHtml(s) {
+        return String(s)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    async function loadData() {
+        clearAlerts();
+        const [empRes, houseRes] = await Promise.all([
+            fetch(API + "/employees"),
+            fetch(API + "/houses")
+        ]);
+
+        if (!empRes.ok) throw new Error("Falha ao carregar employees");
+        if (!houseRes.ok) throw new Error("Falha ao carregar houses");
+
+        employees = await empRes.json();
+        houses = await houseRes.json();
+
+        // sort for nicer UI
+        employees.sort((a, b) => a.name.localeCompare(b.name, "pt", {sensitivity: "base"}));
+        houses.sort((a, b) => (a.shortName ?? "").localeCompare(b.shortName ?? "", "pt", {sensitivity: "base"}));
+
+        renderEmployees();
+        renderHouses();
+    }
+
+    async function submitShift() {
+        clearAlerts();
+
+        const date = elShiftDate.value;
+        if (!date) return showError("Escolhe um dia.");
+        if (selectedEmployeeIds.size === 0) return showError("Escolhe pelo menos 1 pessoa.");
+        if (selectedHouseIds.size === 0) return showError("Escolhe pelo menos 1 casa.");
+
+        const body = {
+            date: date,
+            employeeIds: Array.from(selectedEmployeeIds),
+            houseIds: Array.from(selectedHouseIds)
+        };
+
+        const res = await fetch(API + "/shifts", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(body)
+        });
+
+        if (res.ok) {
+            const json = await res.json();
+            showSuccess(`✅ Registo criado! Shift ID: ${json.shiftId}`);
+            return;
+        }
+
+        let errMsg = "Erro ao criar registo.";
+        try {
+            const err = await res.json();
+            errMsg = err.message ?? errMsg;
+        } catch (_) {}
+
+        showError(errMsg);
+    }
+
+    document.getElementById("btnSubmit").onclick = submitShift;
+
+    document.getElementById("btnReset").onclick = () => {
+        selectedEmployeeIds.clear();
+        selectedHouseIds.clear();
+        elHouseSearch.value = "";
+        clearAlerts();
+        renderEmployees();
+        renderHouses();
+    };
+
+    document.getElementById("btnClearHouses").onclick = () => {
+        selectedHouseIds.clear();
+        clearAlerts();
+        renderHouses();
+    };
+
+    elHouseSearch.addEventListener("input", () => renderHouses());
+
+    // default date = today
+    elShiftDate.valueAsDate = new Date();
+
+    loadData().catch(e => showError(e.message));
+</script>
+
+</body>
+</html>

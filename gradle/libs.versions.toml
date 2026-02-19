@@ -1,6 +1,13 @@
 [versions]
-telegrambots = "9.3.0"
+bootstrap = "5.3.3"
+instancio = "3.4.0"
+springdoc = "2.6.0"
+testcontainers = "1.20.4"
 
 [libraries]
-telegrambots-longpolling = { module = "org.telegram:telegrambots-springboot-longpolling-starter", version.ref = "telegrambots" }
-telegrambots-client = { module = "org.telegram:telegrambots-client", version.ref = "telegrambots" }
+bootstrap = { module = "org.webjars:bootstrap", version.ref = "bootstrap" }
+instancio-junit = { module = "org.instancio:instancio-junit", version.ref = "instancio" }
+springdoc-openapi-webmvc = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
+testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
+testcontainers-junit = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }

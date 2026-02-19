@@ -21,8 +21,8 @@ class CleaningShiftService(
     fun createShift(request: CreateShiftRequest): CreateShiftResponse {
         val shift = with(shiftMapper) { request.toDomain() }
 
-        val employees = employeeRepository.findAllById(shift.employeeIds)
-        val houses = houseRepository.findAllById(shift.houseIds)
+        val employees = employeeRepository.findAllById(shift.employeeIds).toList()
+        val houses = houseRepository.findAllById(shift.houseIds).toList()
 
         val entity = with(shiftMapper) { shift.toEntity(employees, houses) }
         val saved = cleaningShiftRepository.save(entity)

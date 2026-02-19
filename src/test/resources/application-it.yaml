@@ -1,8 +1,4 @@
 spring:
-  docker:
-    compose:
-      enabled: true
-
   datasource:
     url: jdbc:postgresql://localhost:5432/ajudante
     username: ajudante
@@ -10,6 +6,3 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
-server:
-  servlet:
-    context-path: /cinzaerosa

@@ -5,6 +5,6 @@ import java.time.LocalDate
 data class Shift(
     val id: Int? = null,
     val date: LocalDate,
-    val employeeIds: Set<Int>,
-    val houseIds: Set<Int>
+    val employeeSet: Set<Employee>,
+    val houseSet: Set<House>
 )

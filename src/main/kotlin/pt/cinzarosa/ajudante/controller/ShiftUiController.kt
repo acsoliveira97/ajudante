@@ -12,4 +12,7 @@ class ShiftUiController {
     fun newShift(): String {
         return "shifts/new"
     }
+
+    @GetMapping("/search")
+    fun searchPage(): String = "shifts/search"
 }

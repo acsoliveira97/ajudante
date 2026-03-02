@@ -15,7 +15,11 @@
 
     <div class="d-flex align-items-center justify-content-between mb-3">
         <h1 class="h3 mb-0">➕ Novo registo</h1>
-        <span class="text-muted small">Ajudante</span>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-secondary" href="/cinzaerosa/ui/shifts/search">
+                🔎 Procurar turnos
+            </a>
+        </div>
     </div>
 
     <div class="card shadow-sm">
@@ -316,7 +320,18 @@
 
         if (res.ok) {
             const json = await res.json();
-            showSuccess(`✅ Registo criado! Shift ID: ${json.shiftId}`);
+
+            showSuccess(`✅ Registo criado!`);
+            elAlertSuccess.scrollIntoView({behavior: "smooth"});
+
+            selectedEmployeeIds.clear();
+            selectedHouseIds.clear();
+            elHouseSearch.value = "";
+            elShiftDate.valueAsDate = new Date();
+
+            renderEmployees();
+            renderHouses();
+
             return;
         }
 

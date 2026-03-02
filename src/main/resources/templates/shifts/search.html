@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Ajudante — Procurar turnos</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        .chip-btn { white-space: nowrap; }
+        .scroll-box { max-height: 240px; overflow: auto; }
+        .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    </style>
+</head>
+
+<body class="bg-light">
+<div class="container py-4" style="max-width: 1000px;">
+
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h1 class="h3 mb-0">🔎 Procurar turnos</h1>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-secondary btn-sm" href="/cinzaerosa/ui/shifts/new">➕ Novo registo</a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+
+            <!-- Alerts -->
+            <div id="alertError" class="alert alert-danger d-none"></div>
+
+            <div class="row g-3">
+                <!-- Date -->
+                <div class="col-12 col-md-4">
+                    <label class="form-label">Dia</label>
+                    <input id="shiftDate" type="date" class="form-control"/>
+                    <div class="form-text">Obrigatório.</div>
+                </div>
+
+                <!-- House -->
+                <div class="col-12 col-md-4">
+                    <label class="form-label">Casa (opcional)</label>
+                    <select id="houseSelect" class="form-select">
+                        <option value="">— Qualquer —</option>
+                    </select>
+                    <div class="form-text">Filtra por casa nesse dia.</div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="col-12 col-md-4 d-flex align-items-end gap-2">
+                    <button id="btnSearch" class="btn btn-primary w-100">Pesquisar</button>
+                    <button id="btnClear" class="btn btn-outline-secondary w-100">Limpar</button>
+                </div>
+            </div>
+
+            <!-- Team -->
+            <div class="mt-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <label class="form-label mb-0">Equipa (opcional, match exato)</label>
+                    <small class="text-muted">Selecionadas: <span id="teamCount">0</span></small>
+                </div>
+
+                <div class="mt-2 d-flex flex-wrap gap-2" id="employeesBox"></div>
+                <div class="form-text">
+                    Se escolheres pessoas, a pesquisa devolve apenas turnos cuja equipa é <b>exatamente</b> essa (sem mais nem menos).
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Results -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <h2 class="h5 mb-0">Resultados</h2>
+                <small class="text-muted">Encontrados: <span id="resultCount">0</span></small>
+            </div>
+
+            <div id="emptyState" class="text-muted d-none">
+                Nenhum turno encontrado para estes filtros.
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                    <thead>
+                    <tr>
+                        <th style="width: 90px;">Shift</th>
+                        <th style="width: 140px;">Data</th>
+                        <th>Equipa</th>
+                        <th>Casas</th>
+                    </tr>
+                    </thead>
+                    <tbody id="resultsTbody"></tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // Adjust these if your endpoints differ
+    const BASE = "/cinzaerosa";
+
+    let employees = [];
+    let houses = [];
+    const selectedEmployeeIds = new Set();
+
+    const elAlertError = document.getElementById("alertError");
+    const elShiftDate = document.getElementById("shiftDate");
+    const elHouseSelect = document.getElementById("houseSelect");
+    const elEmployeesBox = document.getElementById("employeesBox");
+    const elTeamCount = document.getElementById("teamCount");
+    const elResultsTbody = document.getElementById("resultsTbody");
+    const elEmptyState = document.getElementById("emptyState");
+    const elResultCount = document.getElementById("resultCount");
+
+    function showError(msg) {
+        elAlertError.textContent = msg;
+        elAlertError.classList.remove("d-none");
+    }
+    function clearError() {
+        elAlertError.classList.add("d-none");
+        elAlertError.textContent = "";
+    }
+
+    function renderEmployees() {
+        elEmployeesBox.innerHTML = "";
+        employees.forEach(e => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            const selected = selectedEmployeeIds.has(e.id);
+            btn.className = "btn btn-sm chip-btn " + (selected ? "btn-success" : "btn-outline-success");
+            btn.textContent = e.name;
+
+            btn.onclick = () => {
+                if (selectedEmployeeIds.has(e.id)) selectedEmployeeIds.delete(e.id);
+                else selectedEmployeeIds.add(e.id);
+
+                elTeamCount.textContent = String(selectedEmployeeIds.size);
+                renderEmployees();
+            };
+
+            elEmployeesBox.appendChild(btn);
+        });
+        elTeamCount.textContent = String(selectedEmployeeIds.size);
+    }
+
+    function renderHouseSelect() {
+        // keep first option
+        const current = elHouseSelect.value;
+        elHouseSelect.innerHTML = `<option value="">— Qualquer —</option>`;
+
+        houses.forEach(h => {
+            const opt = document.createElement("option");
+            opt.value = String(h.id);
+            opt.textContent = `${h.shortName}`;
+            elHouseSelect.appendChild(opt);
+        });
+
+        // restore if exists
+        if ([...elHouseSelect.options].some(o => o.value === current)) {
+            elHouseSelect.value = current;
+        }
+    }
+
+    function renderResults(rows) {
+        elResultsTbody.innerHTML = "";
+        elResultCount.textContent = String(rows.length);
+
+        if (!rows || rows.length === 0) {
+            elEmptyState.classList.remove("d-none");
+            return;
+        }
+        elEmptyState.classList.add("d-none");
+
+        rows.forEach(r => {
+            const tr = document.createElement("tr");
+
+            const tdId = document.createElement("td");
+            tdId.className = "mono";
+            tdId.textContent = r.shiftId;
+
+            const tdDate = document.createElement("td");
+            tdDate.textContent = r.date;
+
+            const tdTeam = document.createElement("td");
+            tdTeam.textContent = (r.employees && r.employees.length) ? r.employees.join(", ") : "—";
+
+            const tdHouses = document.createElement("td");
+            tdHouses.textContent = (r.houses && r.houses.length) ? r.houses.join(", ") : "—";
+
+            tr.appendChild(tdId);
+            tr.appendChild(tdDate);
+            tr.appendChild(tdTeam);
+            tr.appendChild(tdHouses);
+
+            elResultsTbody.appendChild(tr);
+        });
+    }
+
+    async function loadData() {
+        clearError();
+
+        const [empRes, houseRes] = await Promise.all([
+            fetch(BASE + "/employees"),
+            fetch(BASE + "/houses")
+        ]);
+
+        if (!empRes.ok) throw new Error("Erro a carregar empregados.");
+        if (!houseRes.ok) throw new Error("Erro a carregar casas.");
+
+        employees = await empRes.json();
+        houses = await houseRes.json();
+
+        employees.sort((a,b) => a.name.localeCompare(b.name));
+        houses.sort((a,b) => (a.shortName ?? "").localeCompare(b.shortName ?? ""));
+
+        renderEmployees();
+        renderHouseSelect();
+    }
+
+    function buildQuery() {
+        const date = elShiftDate.value;
+        if (!date) throw new Error("Escolhe um dia.");
+
+        const params = new URLSearchParams();
+        params.set("date", date);
+
+        const houseId = elHouseSelect.value;
+        if (houseId) params.set("houseId", houseId);
+
+        if (selectedEmployeeIds.size > 0) {
+            // assuming your controller accepts employeeIds=1,2,3
+            params.set("employeeIds", Array.from(selectedEmployeeIds).join(","));
+        }
+
+        return params.toString();
+    }
+
+    async function doSearch() {
+        clearError();
+        renderResults([]);
+
+        let qs;
+        try {
+            qs = buildQuery();
+        } catch (e) {
+            showError(e.message ?? "Parâmetros inválidos.");
+            return;
+        }
+
+        const res = await fetch(BASE + "/shifts?" + qs);
+        if (!res.ok) {
+            let msg = "Erro ao pesquisar turnos.";
+            try {
+                const err = await res.json();
+                msg = err.message ?? msg;
+            } catch (_) {}
+            showError(msg);
+            return;
+        }
+
+        const rows = await res.json();
+        renderResults(rows);
+    }
+
+    document.getElementById("btnSearch").onclick = doSearch;
+
+    document.getElementById("btnClear").onclick = () => {
+        clearError();
+        selectedEmployeeIds.clear();
+        elHouseSelect.value = "";
+        elTeamCount.textContent = "0";
+        renderEmployees();
+        renderResults([]);
+        elShiftDate.valueAsDate = new Date();
+    };
+
+    // default date = today
+    elShiftDate.valueAsDate = new Date();
+
+    loadData().catch(e => showError(e.message ?? "Erro ao iniciar."));
+</script>
+
+</body>
+</html>

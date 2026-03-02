@@ -4,14 +4,18 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import pt.cinzarosa.ajudante.dto.CreateShiftRequest
 import pt.cinzarosa.ajudante.dto.CreateShiftResponse
+import pt.cinzarosa.ajudante.dto.ShiftViewResponse
 import pt.cinzarosa.ajudante.service.CleaningShiftService
+import java.time.LocalDate
 
 @RestController
 @RequestMapping("/shifts")
@@ -27,5 +31,20 @@ class CleaningShiftController(
         @Valid @RequestBody request: CreateShiftRequest
     ): CreateShiftResponse {
         return cleaningShiftService.createShift(request)
+    }
+
+    @GetMapping
+    fun findShifts(
+        @RequestParam date: LocalDate,
+        @RequestParam(required = false) houseId: Int?,
+        @RequestParam(required = false) employeeIds: String?
+    ): List<ShiftViewResponse> {
+        val employees = employeeIds
+            ?.split(",")
+            ?.mapNotNull { it.trim().toIntOrNull() }
+            ?.toSet()
+            ?: emptySet()
+
+        return cleaningShiftService.findBy(date, houseId, employees)
     }
 }

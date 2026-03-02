@@ -30,8 +30,8 @@ class CleaningShift(
     var createdAt: Instant? = null,
 
     @OneToMany(mappedBy = "shift", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var teamMembers: MutableSet<CleaningShiftEmployee> = mutableSetOf(),
+    var teamMembers: MutableList<CleaningShiftEmployee> = mutableListOf(),
 
     @OneToMany(mappedBy = "shift", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var houses: MutableSet<CleaningShiftHouse> = mutableSetOf()
+    var houses: MutableList<CleaningShiftHouse> = mutableListOf()
 )

@@ -11,11 +11,13 @@ import pt.cinzarosa.ajudante.entity.Client
 import pt.cinzarosa.ajudante.entity.Employee
 import pt.cinzarosa.ajudante.entity.House
 import pt.cinzarosa.ajudante.model.Shift
-import java.math.BigDecimal
 
 class ShiftMapperTest {
 
-    private val mapper = ShiftMapper()
+    private val employeeMapper = EmployeeMapper()
+    private val clientMapper = ClientMapper()
+    private val houseMapper = HouseMapper(clientMapper)
+    private val mapper = ShiftMapper(houseMapper, employeeMapper)
 
     @Test
     fun `Map from cleaning shift entity to domain`() {
@@ -29,20 +31,21 @@ class ShiftMapperTest {
         assertThat(domain.date)
             .isEqualTo(cleaningShift.cleaningDate)
 
-        val expectedEmployeeIds: Set<Int> = cleaningShift.teamMembers
-            .mapNotNull { it.employee?.id }     // employee can be null
+        val expectedEmployeeIds: Set<Int?> = cleaningShift.teamMembers
+            .mapNotNull { it.employee }
+            .map { it.id }
             .toSet()
 
-        assertThat(domain.employeeIds)
+        assertThat(domain.employeeSet.map { it.id }.toSet())
             .usingRecursiveComparison()
             .isEqualTo(expectedEmployeeIds)
 
-
-        val expectedHouseIds: Set<Int> = cleaningShift.houses
-            .mapNotNull { it.house?.id }
+        val expectedHouseIds: Set<Int?> = cleaningShift.houses
+            .mapNotNull { it.house }
+            .map { it.id }
             .toSet()
 
-        assertThat(domain.houseIds)
+        assertThat(domain.houseSet.map { it.id }.toSet())
             .usingRecursiveComparison()
             .isEqualTo(expectedHouseIds)
     }
@@ -51,14 +54,19 @@ class ShiftMapperTest {
     fun `Map from domain shift to cleaning shift entity`() {
         val shift = Instancio.create(Shift::class.java)
 
-        // Build "loaded entities" from whatever IDs Instancio generated
-        val employees = shift.employeeIds
-            .map { Employee(id = it, name = "E-${it}") }
+        val employees = shift.employeeSet
+            .map { Employee(id = it.id, name = it.name) }
 
-        val houses = shift.houseIds
-            .map { House(id = it, name = "H-${it}", shortName = "H${it}", Instancio.create(Client::class.java),
-                BigDecimal("31.00")
-            ) }
+        val houses = shift.houseSet
+            .map {
+                House(
+                    id = it.id,
+                    name = it.name,
+                    shortName = it.shortName,
+                    client = Instancio.create(Client::class.java),
+                    pricePerClean = it.pricePerClean
+                )
+            }
 
         val entity = with(mapper) { shift.toEntity(employees, houses) }
 
@@ -71,7 +79,7 @@ class ShiftMapperTest {
 
         assertThat(mappedEmployeeIds)
             .usingRecursiveComparison()
-            .isEqualTo(shift.employeeIds.map { it }.toSet())
+            .isEqualTo(shift.employeeSet.map { it.id }.toSet())
 
         val mappedHouseIds = entity.houses
             .mapNotNull { it.house?.id }
@@ -79,23 +87,31 @@ class ShiftMapperTest {
 
         assertThat(mappedHouseIds)
             .usingRecursiveComparison()
-            .isEqualTo(shift.houseIds.map { it }.toSet())
+            .isEqualTo(shift.houseSet.map { it.id }.toSet())
     }
 
     @Test
     fun `Map from create cleaning shift request to domain shift entity`() {
         val createShiftRequest = Instancio.create(CreateShiftRequest::class.java)
 
-        val domain = with(mapper) { createShiftRequest.toDomain() }
+        val employees = createShiftRequest.employeeIds
+            .map { Instancio.of(Employee::class.java).set(Select.field("id"), it).create() }
+            .toSet()
+
+        val houses = createShiftRequest.houseIds
+            .map { Instancio.of(House::class.java).set(Select.field("id"), it).create() }
+            .toSet()
+
+        val domain = with(mapper) { createShiftRequest.toDomain(employees, houses) }
 
         assertThat(domain.id).isNull()
         assertThat(domain.date).isEqualTo(createShiftRequest.date)
 
-        assertThat(domain.employeeIds)
+        assertThat(domain.employeeSet.map { it.id }.toSet())
             .usingRecursiveComparison()
             .isEqualTo(createShiftRequest.employeeIds)
 
-        assertThat(domain.houseIds)
+        assertThat(domain.houseSet.map { it.id }.toSet())
             .usingRecursiveComparison()
             .isEqualTo(createShiftRequest.houseIds)
     }

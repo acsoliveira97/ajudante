@@ -7,8 +7,8 @@ import java.io.Serializable
 @Embeddable
 data class CleaningShiftEmployeeId(
     @Column(name = "cleaning_shift_id")
-    val cleaningShiftId: Int = 0,
+    var cleaningShiftId: Int? = null,
 
     @Column(name = "employee_id")
-    val employeeId: Int = 0
+    var employeeId: Int? = null
 ) : Serializable

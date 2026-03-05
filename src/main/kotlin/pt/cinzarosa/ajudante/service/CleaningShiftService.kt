@@ -11,10 +11,12 @@ import pt.cinzarosa.ajudante.repository.CleaningShiftHouseRepository
 import pt.cinzarosa.ajudante.repository.CleaningShiftRepository
 import pt.cinzarosa.ajudante.repository.EmployeeRepository
 import pt.cinzarosa.ajudante.repository.HouseRepository
+import pt.cinzarosa.ajudante.validation.CreateShiftValidator
 import java.time.LocalDate
 
 @Service
 class CleaningShiftService(
+    private val validator: CreateShiftValidator,
     private val cleaningShiftRepository : CleaningShiftRepository,
     private val cleaningShiftHouseRepository: CleaningShiftHouseRepository,
     private val shiftMapper: ShiftMapper,
@@ -24,6 +26,7 @@ class CleaningShiftService(
 
     @Transactional
     fun createShift(request: CreateShiftRequest): CreateShiftResponse {
+        validator.validate(request)
 
         val conflicts = cleaningShiftHouseRepository
             .findAllByHouseIdInAndCleaningDate(request.houseIds, request.date)

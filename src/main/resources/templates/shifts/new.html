@@ -170,7 +170,6 @@
         if (!q) return true;
         const qq = q.toLowerCase();
         return (h.shortName && h.shortName.toLowerCase().includes(qq)) ||
-            (h.name && h.name.toLowerCase().includes(qq)) ||
             (h.clientName && h.clientName.toLowerCase().includes(qq));
     }
 

@@ -5,8 +5,8 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5432/ajudante
-    username: ajudante
-    password: ajudante
+    username: ajudante_user
+    password: ThisIsMyStrongPassword
   jpa:
     hibernate:
       ddl-auto: validate

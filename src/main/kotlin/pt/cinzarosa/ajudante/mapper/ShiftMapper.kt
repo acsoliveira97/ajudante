@@ -91,6 +91,6 @@ class ShiftMapper(
             shiftId = requireNotNull(this.id),
             date = this.date,
             employees = this.employeeSet.map { it.name },
-            houses = this.houseSet.map { it.name }
+            houses = this.houseSet.map { it.shortName }
         )
 }

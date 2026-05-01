@@ -6,21 +6,24 @@ insert into client (id, name, nif, email, address) values
     (2, 'Rodrigo Mendes - Ritualalcance', '514834404', 'Rodrigogalizamendes@hotmail.com', 'Rua Tenente Valadim, n.° 252 4100- 476 Porto'),
     (3, 'Jefrey Rene Santana','310034264','', 'Rua da Corticeira nº 8, 4000-184'),
     (4, 'Hugo Oliveira Campos Unipessoal LDA','515644706', 'all.relax.porto@gmail.com', 'Porto'),
-    (5, 'Nomads', 'NIF', '', '');
+    (5, 'Nomads Apartamentos Turísticos, Sociedade Unipessoal LDA', '514760826', 'finance@nomadcityflats.com', 'Avenida da Boavista 1203, sala 108, 4100-130 Porto'),
+    (6, 'Oporto Station Hostel & Rooms II, Lda', '515663301', 'Fornecedores@oshr.pr', 'Rua Justino Teixeira, 262 4300-275 Porto');
 
 -- =============================
 -- EMPLOYEES
 -- =============================
 insert into employee (name) values
+    ('Elisabete'),
+    ('Larissa'),
     ('Armanda'),
     ('Patrícia'),
     ('Andreia'),
     ('Paula'),
-    ('Andresa'),
+    ('Andreza'),
     ('Pri');
 
 -- =============================
--- HOUSES (MVP)
+-- HOUSES
 -- short_name is what the bot shows: "Casa 1", etc.
 -- name can be more descriptive later.
 -- =============================
@@ -37,11 +40,13 @@ insert into house (name, short_name, client_id, price_per_clean) values
     ('Art Deco 31 Luxury 2BR Apartment Downtown Metro AC - Rua do Campinho','Art Deco 31',1,43.50),
     ('Art Deco 32 Luxury 2BR Apartment Downtown Metro AC - Rua do Campinho','Art Deco 32',1,43.50),
     ('Art Deco 33 Luxury 2BR Apartment Downtown Metro AC - Avenida Rodrigues de Freitas','Art Deco 33',1,43.50),
+    ('Art Deco 34 Luxury 2BR Apartment Downtown Metro AC - Avenida Rodrigues de Freitas','Art Deco 34',1,32.20),
     ('Art Deco 41 Luxury Apartment Downtown Metro AC - Rua do Campinho','Art Deco 41',1,35.70),
     ('Art Deco 42 Luxury 2BR Apartment Downtown Metro AC - Rua do Campinho','Art Deco 42',1,43.50),
     ('Bailarina Historic Luxury House at Rua das Flores - Rua do Ferraz','Bailarina',1,43.50),
     ('Beautiful Loft w/AC, Balcony , Downtown near Metro - Rua de Camões','Loft',1,32.20),
     ('Bicycle Luxury House, parking, downtown near metro - Rua da Alegria','Bicycle',1,32.20),
+    ('Camões Apartment with A/C near Metro - Rua de Camões','Rua de Camões',1,32.20),
     ('Cedofeita Sunshine Luxury Apartment Downtown Porto - Rua de Cedofeita','Cedofeita',1,32.20),
     ('Central Luxury Apartment w/AC Metro Downtown Porto - Rua do Pinheiro','Central',1,32.20),
     ('Chimney Luxury House w/AC - Avenida de Rodrigues de Freitas','Chimney',1,32.20),
@@ -50,32 +55,36 @@ insert into house (name, short_name, client_id, price_per_clean) values
     ('Cosy House Downtown Porto w/ swimming pool and AC - Rua Clemente Meneres','SP4',1,32.20),
     ('Discovery Luxury Historic House At Rua das Flores - Rua do Ferraz','Discovery',1,35.70),
     ('Duque Luxury Apartment Downtown Porto near Metro - Rua Duque de Loulé','Duque',1,35.70),
+    ('Duque 3 Luxury Apartment Downtown Porto near Metro - Rua Duque de Loulé','Duque',1,35.70),
     ('Estefânia Luxury Apartment Historic House Downtown - Rua do Ferraz','Estefânia',1,35.70),
     ('Exclusive Charm House - Avenida Rodrigues Freitas','Exclusive',1,32.20),
+    ('Library House - Avenida Rodrigues Freitas','Library',1,32.20),
     ('Fashion Luxury House with A/C, Downtown near Metro - Rua de Santo Ildefonso','Fashion',1,35.70),
-    ('Garden Luxury House | Downtown Oporto with AC - Rua Alexandre Herculano','Garden',1,50.00),
+    ('Garden Luxury House | Downtown Oporto with AC - Rua Alexandre Herculano','Alexandre Herculado',1,50.00),
     ('Glamour by the River - Rua de São Vitor','Glamour',1,32.20),
     ('Golden Factory Apartment Downtown, Terrace and AC - Avenida Rodrigues de Freitas','Factory',1,32.20),
     ('Green Garden Luxury House w/ AC, Metro & Downtown - Rua de Santo Ildefonso 410','Green Garden',1,32.20),
-    ('Historic Porto Nook Downtown Porto near metro - Rua do Cativo','Historic',1,32.20),
+    ('Historic Porto Nook Downtown Porto near metro - Rua do Cativo','Cativo',1,32.20),
     ('Industrial Cozy Loft, Downtown Porto - R. Dr. Alves da Veiga','Industrial',1,32.20),
     ('Login Luxury Apartment - Rua Formosa','Login',1,32.20),
     ('Lovely Nest w/AC, Charm house Downtown Porto near - Rua de Dom João IV','Lovely',1,35.70),
     ('Luxury Artistic House, Downtown Porto near Metro - Rua do Almada','Artistic',1,32.20),
     ('Luxury House with A/C, Downtown Porto near Metro - Rua de Santo Ildefonso','Luxury',1,35.70),
     ('Luxury Studio, with A/C Downtown Porto near Metro - Rua do Almada','Studio',1,32.20),
-    ('Luxury Style 1 with A/C Downtown Porto near Metro - Rua Entreparedes','Style 1',1,32.20),
-    ('Luxury Style 10 with A/C Downtown Porto near Metro - Rua Entreparedes','Style 10',1,32.20),
-    ('Luxury Style 20 with AC Downtown Porto near Metro - Rua Entreparedes','Style 20',1,35.70),
-    ('Luxury Style 30 with AC Downtown Porto near Metro - Rua Entreparedes','Style 30',1,32.20),
+    ('Luxury Style 5 with A/C Downtown Porto near Metro - Rua Entreparedes','Style 5',1,32.20),
+    ('Luxury Style 10 with A/C Downtown Porto near Metro - Rua Entreparedes','Style 1',1,32.20),
+    ('Luxury Style 20 with AC Downtown Porto near Metro - Rua Entreparedes','Style 2',1,35.70),
+    ('Luxury Style 30 with AC Downtown Porto near Metro - Rua Entreparedes','Style 3',1,32.20),
     ('Luxury Style 4 with A/C Downtown Porto near Metro - Rua Entreparedes','Style 4',1,32.20),
     ('Luxury Style 6 with A/C Downtown Porto near Metro - Rua Entreparedes','Style 6',1,32.20),
     ('Luxury Style 7 with A/C Downtown Porto near Metro - Rua Entreparedes','Style 7',1,32.20),
+    ('Luxury Style 8 with A/C Downtown Porto near Metro - Rua Entreparedes','Style 8',1,32.20),
     ('Luxury Swimming Pool 1 with AC, Downtown and Metro - Rua dos Mártires da Liberdade','SP1',1,32.20),
     ('Luxury Swimming Pool 2 with AC, Downtown and Metro - Rua dos Mártires da Liberdade','SP2',1,32.20),
     ('Magnolia 1 Luxury with AC Metro Downtown Porto - Rua do Pinheiro','Magnolia 1',1,32.20),
     ('Magnolia 3 Luxury with AC Metro Downtown Porto - Rua do Pinheiro','Magnolia 3',1,32.20),
     ('Magnolia 5 Luxury with AC Metro Downtown Porto - Rua do Pinheiro','Magnolia 5',1,60.00),
+    ('Magnolia 6 Luxury with AC Metro Downtown Porto - Rua do Pinheiro','Magnolia 6',1,35.70),
     ('Maria Pia Historic Luxury Apartment with Terrace - Rua do Ferraz','Maria Pia',1,35.70),
     ('Modern Loft, with AC, Metro, Downtown Porto - Rua do Pinheiro','Modern',1,32.20),
     ('Nature Cosy Private House,w/AC Downtown near Metro - Rua de São Brás','Nature',1,32.20),
@@ -96,7 +105,7 @@ insert into house (name, short_name, client_id, price_per_clean) values
     ('Sunshine Luxury House Urban Retreat Downtown Porto - Rua do Heroísmo','Sunshine',1,32.20),
     ('Swimming Pool Luxury House, with AC Downtown Porto - Rua de Clemente Meneres','SP3',1,32.20),
     ('Terrace Bliss w/AC Downtown Porto - Rua Martires da Liberdade','Bliss',1,35.70),
-    ('The Bitcoin Chapel | Iconic Luxury Residence - Rua do Ferraz','Chapel',1,35.70),
+    ('The Bitcoin Chapel | Iconic Luxury Residence - Rua do Ferraz','Capela',1,35.70),
     ('The Luxe Cube Apartment, A/C, Downtown near Metro - Largo dos Loios','Cube',1,32.20),
     ('Theater Studio with AC, Downtown Porto near Metro - Avenida de Rodrigues de Freitas','Theater',1,32.20),
     ('Trindade Essence Duo Suites - Travessa Alferes Malheiro','Trindade',1,43.50),
@@ -176,4 +185,13 @@ insert into house (name, short_name, client_id, price_per_clean) values
     ('R. Guedes de Azevedo 33, 2º','Guedes Azevedo 33 2',5,57.00),
     ('R. Guedes de Azevedo 33, 3º','Guedes Azevedo 33 3',5,57.00),
     ('R. António Cândido 262, 1º','Antonio Candido 262 1',5,57.00),
-    ('R. António Cândido 262, 2º','Antonio Candido 262 2',5,57.00);
+    ('R. António Cândido 262, 2º','Antonio Candido 262 2',5,57.00),
+    ('Estação 1','Quarto 01',6,20.00),
+    ('Estação 4','Quarto 04',6,20.00),
+    ('Estação 11','Quarto 11',6,20.00),
+    ('Estação 11','Quarto 12',6,20.00),
+    ('Estação 13','Quarto 13',6,20.00),
+    ('Estação 13','Quarto 14',6,20.00),
+    ('Estação 15','Quarto 15',6,20.00),
+    ('Estação 16','Quarto 16',6,20.00),
+    ('Estação 21','Quarto 21',6,20.00);

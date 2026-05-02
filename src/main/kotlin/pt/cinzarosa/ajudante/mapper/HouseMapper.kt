@@ -1,6 +1,7 @@
 package pt.cinzarosa.ajudante.mapper
 
 import org.springframework.stereotype.Component
+import pt.cinzarosa.ajudante.dto.CreateHouseRequest
 import pt.cinzarosa.ajudante.dto.HouseResponse
 import pt.cinzarosa.ajudante.model.House
 
@@ -31,5 +32,13 @@ class HouseMapper(
             shortName = shortName,
             pricePerClean = pricePerClean,
             client = with(clientMapper) { client.toDomain() }
+        )
+
+    fun CreateHouseRequest.toEntity(client: pt.cinzarosa.ajudante.entity.Client): pt.cinzarosa.ajudante.entity.House =
+        pt.cinzarosa.ajudante.entity.House(
+            name = name,
+            shortName = shortName,
+            client = client,
+            pricePerClean = pricePerClean
         )
 }

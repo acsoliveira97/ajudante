@@ -2,6 +2,7 @@ package pt.cinzarosa.ajudante.controller
 
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 
 @Controller
@@ -15,4 +16,7 @@ class ShiftUiController {
 
     @GetMapping("/search")
     fun searchPage(): String = "shifts/search"
+
+    @GetMapping("/edit/{id}")
+    fun editShift(@PathVariable id: Int): String = "shifts/edit"
 }

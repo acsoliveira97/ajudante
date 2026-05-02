@@ -92,6 +92,7 @@
                         <th style="width: 140px;">Data</th>
                         <th>Equipa</th>
                         <th>Casas</th>
+                        <th style="width: 80px;"></th>
                     </tr>
                     </thead>
                     <tbody id="resultsTbody"></tbody>
@@ -194,10 +195,19 @@
             const tdHouses = document.createElement("td");
             tdHouses.textContent = (r.houses && r.houses.length) ? r.houses.join(", ") : "—";
 
+            const tdActions = document.createElement("td");
+            const editLink = document.createElement("a");
+            editLink.href = BASE + "/ui/shifts/edit/" + r.shiftId;
+            editLink.className = "btn btn-sm btn-outline-primary";
+            editLink.textContent = "✏️";
+            editLink.title = "Editar";
+            tdActions.appendChild(editLink);
+
             tr.appendChild(tdId);
             tr.appendChild(tdDate);
             tr.appendChild(tdTeam);
             tr.appendChild(tdHouses);
+            tr.appendChild(tdActions);
 
             elResultsTbody.appendChild(tr);
         });

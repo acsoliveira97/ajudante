@@ -1,44 +1,31 @@
 package pt.cinzarosa.ajudante.repository
 
-import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.Query
-import org.springframework.data.repository.query.Param
 import pt.cinzarosa.ajudante.entity.CleaningShift
+import pt.cinzarosa.ajudante.entity.Employee
+import pt.cinzarosa.ajudante.entity.House
 import java.time.LocalDate
+import java.util.*
 
-interface CleaningShiftRepository : JpaRepository<CleaningShift, Int> {
+interface CleaningShiftRepository {
 
-    @Query(
-        value = """
-        SELECT s.*
-        FROM cleaning_shift s
-        WHERE s.cleaning_date = :date
-          AND (:houseId IS NULL OR EXISTS (
-              SELECT 1
-              FROM cleaning_shift_house sh
-              WHERE sh.cleaning_shift_id = s.id
-                AND sh.house_id = :houseId
-                AND sh.cleaning_date = :date
-          ))
-          AND (
-              :teamSize = 0
-              OR s.id IN (
-                  SELECT se.cleaning_shift_id
-                  FROM cleaning_shift_employee se
-                  GROUP BY se.cleaning_shift_id
-                  HAVING COUNT(DISTINCT se.employee_id) = :teamSize
-                     AND COUNT(DISTINCT CASE WHEN se.employee_id IN (:employeeIds)
-                                             THEN se.employee_id END) = :teamSize
-              )
-          )
-        ORDER BY s.id DESC
-        """,
-        nativeQuery = true
-    )
-    fun findByDateHouseAndExactTeam(
-        @Param("date") date: LocalDate,
-        @Param("houseId") houseId: Int?,
-        @Param("employeeIds") employeeIds: Set<Int>,
-        @Param("teamSize") teamSize: Int
-    ): List<CleaningShift>
+    fun findByDateHouseAndExactTeam(date: LocalDate, houseId: Int?, employeeIds: Set<Int>, teamSize: Int): List<CleaningShift>
+
+    fun findById(cleaningShiftId: Int): Optional<CleaningShift>
+
+    fun save(cleaningShift: CleaningShift): CleaningShift
+
+    /**
+     * Asserts no house conflicts exist for the given shift before creation.
+     * Must be called before save().
+     */
+    fun assertCanCreate(shift: CleaningShift)
+
+    /**
+     * Updates a managed CleaningShift by diffing team members and houses.
+     * Enforces house-per-day uniqueness (excluding the shift being updated).
+     * The managed entity is mutated in place — dirty checking persists changes.
+     */
+    fun updateShift(shift: CleaningShift, employees: List<Employee>, houses: List<House>)
 }
+
+

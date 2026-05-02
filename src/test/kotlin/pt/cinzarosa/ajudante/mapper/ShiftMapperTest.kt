@@ -120,7 +120,7 @@ class ShiftMapperTest {
     fun `Map from shift domain entity to create cleaning shift response`() {
         val shift = Instancio.create(Shift::class.java)
 
-        val response = with(mapper) { shift.toCreateShiftResponse() }
+        val response = with(mapper) { shift.toShiftIdResponse() }
 
         assertThat(response.shiftId).isEqualTo(shift.id!!)
     }
@@ -131,7 +131,7 @@ class ShiftMapperTest {
             .set(Select.field(Shift::class.java, "id"), null)
             .create()
 
-        assertThatThrownBy { with(mapper) { shift.toCreateShiftResponse() } }
+        assertThatThrownBy { with(mapper) { shift.toShiftIdResponse() } }
             .isInstanceOf(IllegalArgumentException::class.java)
     }
 

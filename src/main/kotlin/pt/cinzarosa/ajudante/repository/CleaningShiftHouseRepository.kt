@@ -1,11 +1,8 @@
 package pt.cinzarosa.ajudante.repository
 
-import org.springframework.data.jpa.repository.JpaRepository
-import pt.cinzarosa.ajudante.entity.CleaningShiftHouse
-import pt.cinzarosa.ajudante.entity.CleaningShiftHouseId
-import java.time.LocalDate
+import pt.cinzarosa.ajudante.entity.CleaningShift
+import pt.cinzarosa.ajudante.entity.House
 
-interface CleaningShiftHouseRepository : JpaRepository<CleaningShiftHouse, CleaningShiftHouseId> {
-    fun existsByHouseIdAndCleaningDate(houseId: Int, cleaningDate: LocalDate): Boolean
-    fun findAllByHouseIdInAndCleaningDate(houseIds: Collection<Int>, cleaningDate: LocalDate): List<CleaningShiftHouse>
+fun interface CleaningShiftHouseRepository {
+    fun assertNoConflicts(shift: CleaningShift, houses: List<House>, excludeShiftId: Int?)
 }

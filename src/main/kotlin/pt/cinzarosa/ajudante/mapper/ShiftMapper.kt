@@ -2,7 +2,8 @@ package pt.cinzarosa.ajudante.mapper
 
 import org.springframework.stereotype.Component
 import pt.cinzarosa.ajudante.dto.CreateShiftRequest
-import pt.cinzarosa.ajudante.dto.CreateShiftResponse
+import pt.cinzarosa.ajudante.dto.ShiftIdResponse
+import pt.cinzarosa.ajudante.dto.ShiftDetailResponse
 import pt.cinzarosa.ajudante.dto.ShiftViewResponse
 import pt.cinzarosa.ajudante.entity.*
 import pt.cinzarosa.ajudante.model.Shift
@@ -81,8 +82,8 @@ class ShiftMapper(
     /**
      * Domain -> Response DTO
      */
-    fun Shift.toCreateShiftResponse(): CreateShiftResponse =
-        CreateShiftResponse(
+    fun Shift.toShiftIdResponse(): ShiftIdResponse =
+        ShiftIdResponse(
             shiftId = requireNotNull(this.id)
         )
 
@@ -92,5 +93,13 @@ class ShiftMapper(
             date = this.date,
             employees = this.employeeSet.map { it.name },
             houses = this.houseSet.map { it.shortName }
+        )
+
+    fun CleaningShift.toShiftDetailResponse(): ShiftDetailResponse =
+        ShiftDetailResponse(
+            shiftId = requireNotNull(this.id),
+            date = this.cleaningDate,
+            employeeIds = this.teamMembers.mapNotNull { it.employee?.id }.toSet(),
+            houseIds = this.houses.mapNotNull { it.house?.id }.toSet()
         )
 }

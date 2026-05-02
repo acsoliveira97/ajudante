@@ -6,12 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.test.context.ActiveProfiles
+import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
-import org.testcontainers.containers.PostgreSQLContainer
 import pt.cinzarosa.ajudante.AjudanteApplication
 import pt.cinzarosa.ajudante.dto.CreateShiftRequest
-import pt.cinzarosa.ajudante.repository.CleaningShiftRepository
+import pt.cinzarosa.ajudante.repository.CleaningShiftRepositoryJpa
 import pt.cinzarosa.ajudante.service.CleaningShiftService
 import java.time.LocalDate
 import kotlin.jvm.optionals.getOrNull
@@ -31,7 +31,7 @@ class CleaningShiftServiceIT {
     }
 
     @Autowired lateinit var cleaningShiftService: CleaningShiftService
-    @Autowired lateinit var cleaningShiftRepository: CleaningShiftRepository
+    @Autowired lateinit var cleaningShiftRepository: CleaningShiftRepositoryJpa
 
     @Test
     fun `creates a shift with employees and houses`() {

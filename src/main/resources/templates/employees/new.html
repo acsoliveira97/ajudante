@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Ajudante — Nova Pessoa</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+
+<body class="bg-light">
+<div class="container py-4" style="max-width: 600px;">
+
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h1 class="h3 mb-0">➕ Nova pessoa</h1>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-secondary btn-sm" href="/cinzaerosa/ui/shifts/new">Novo turno</a>
+            <a class="btn btn-outline-secondary btn-sm" href="/cinzaerosa/ui/shifts/search">Procurar turnos</a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <!-- Alerts -->
+            <div id="alertSuccess" class="alert alert-success d-none"></div>
+            <div id="alertError" class="alert alert-danger d-none"></div>
+
+            <!-- Name -->
+            <div class="mb-3">
+                <label class="form-label" for="employeeName">Nome</label>
+                <input id="employeeName" type="text" class="form-control" placeholder="Ex: Maria Silva"/>
+                <div class="form-text">Nome completo da pessoa.</div>
+            </div>
+
+            <!-- Submit -->
+            <div class="d-flex gap-2">
+                <button id="btnSubmit" class="btn btn-primary">Guardar</button>
+                <button id="btnReset" class="btn btn-outline-secondary">Limpar</button>
+            </div>
+
+            <!-- Existing employees list -->
+            <hr class="my-4"/>
+            <h2 class="h6 mb-3">Equipa atual</h2>
+            <div id="employeesList" class="d-flex flex-wrap gap-2">
+                <span class="text-muted small">A carregar…</span>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    const BASE = "/cinzaerosa";
+
+    const elName = document.getElementById("employeeName");
+    const elAlertSuccess = document.getElementById("alertSuccess");
+    const elAlertError = document.getElementById("alertError");
+    const elEmployeesList = document.getElementById("employeesList");
+
+    function showError(msg) {
+        elAlertError.textContent = msg;
+        elAlertError.classList.remove("d-none");
+        elAlertSuccess.classList.add("d-none");
+    }
+
+    function showSuccess(msg) {
+        elAlertSuccess.textContent = msg;
+        elAlertSuccess.classList.remove("d-none");
+        elAlertError.classList.add("d-none");
+    }
+
+    function clearAlerts() {
+        elAlertSuccess.classList.add("d-none");
+        elAlertError.classList.add("d-none");
+    }
+
+    function renderEmployees(employees) {
+        elEmployeesList.innerHTML = "";
+        if (!employees || employees.length === 0) {
+            elEmployeesList.innerHTML = `<span class="text-muted small">Nenhuma pessoa registada.</span>`;
+            return;
+        }
+        employees
+            .sort((a, b) => a.name.localeCompare(b.name, "pt", {sensitivity: "base"}))
+            .forEach(e => {
+                const badge = document.createElement("span");
+                badge.className = "badge bg-success";
+                badge.textContent = e.name;
+                elEmployeesList.appendChild(badge);
+            });
+    }
+
+    async function loadEmployees() {
+        const res = await fetch(BASE + "/employees");
+        if (!res.ok) {
+            showError("Erro ao carregar equipa.");
+            return;
+        }
+        const employees = await res.json();
+        renderEmployees(employees);
+    }
+
+    async function submit() {
+        clearAlerts();
+
+        const name = elName.value.trim();
+        if (!name) return showError("O nome não pode estar vazio.");
+
+        const res = await fetch(BASE + "/employees", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({name: name})
+        });
+
+        if (res.ok) {
+            const created = await res.json();
+            showSuccess(`✅ Pessoa "${created.name}" criada com sucesso!`);
+            elName.value = "";
+            loadEmployees();
+            return;
+        }
+
+        let errMsg = "Erro ao criar pessoa.";
+        try {
+            const err = await res.json();
+            errMsg = err.message ?? errMsg;
+        } catch (_) {}
+
+        showError(errMsg);
+    }
+
+    document.getElementById("btnSubmit").onclick = submit;
+
+    document.getElementById("btnReset").onclick = () => {
+        clearAlerts();
+        elName.value = "";
+    };
+
+    // Allow submit on Enter
+    elName.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") submit();
+    });
+
+    loadEmployees();
+</script>
+
+</body>
+</html>
+

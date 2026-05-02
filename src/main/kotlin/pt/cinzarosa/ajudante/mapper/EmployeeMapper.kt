@@ -1,11 +1,12 @@
 package pt.cinzarosa.ajudante.mapper
 
 import org.springframework.stereotype.Component
+import pt.cinzarosa.ajudante.dto.CreateEmployeeRequest
 import pt.cinzarosa.ajudante.dto.EmployeeResponse
 import pt.cinzarosa.ajudante.model.Employee
 
 @Component
-class EmployeeMapper{
+class EmployeeMapper {
 
     fun List<Employee>.toEmployeeResponseList(): List<EmployeeResponse> =
         map { it.toEmployeeResponse() }
@@ -24,4 +25,7 @@ class EmployeeMapper{
             id = requireNotNull(id) { "Employee id is null" },
             name = name
         )
+
+    fun CreateEmployeeRequest.toEntity(): pt.cinzarosa.ajudante.entity.Employee =
+        pt.cinzarosa.ajudante.entity.Employee(name = name)
 }
